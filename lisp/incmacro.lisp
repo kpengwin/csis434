@@ -1,3 +1,5 @@
+;http://tpcg.io/DsyO1O
+
 (defmacro setTo10 (num) (setq num (+ 1 (symbol-value num))) (print num) )
 
 (setq x 25)
