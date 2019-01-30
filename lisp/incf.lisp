@@ -1,4 +1,4 @@
-;   Coding Ground link: http://tpcg.io/cZAJIi
+;   CodingGround link: http://tpcg.io/xEvSiK
 ;
 ;   Explanation: A macro is not a function. According to http://wiki.c2.com/?LispMacro
 ;       "x[Lisp macros] are a way to transform Lisp code. During a macroexpansion phase,
@@ -20,22 +20,28 @@
 ;   2. create the command (setq num (+ 1 num)) EXCEPT - x is substituted for num
 ;   3. evaluate (now we have run: (setq x(+ 1 x)) which is what we wanted )
 ;
+;   Also there's a builtin called incf which does the same thing.
+
 
 (defmacro setTo10(num)
-  (setq num 10)(print num))
+ (setq num 10)(format t "Inside setTo10  num = ~D~%" num))
 
 (defmacro plusOne (num)
-    `(setq ,num (+ 1 ,num)))
+ `(setq ,num (+ 1 ,num)))
 
 (defvar x 25)
 
-(format t "After assignment: x = ~D" x)
+(format t "After assignment: x = ~D~%" x)
 
 (setTo10 x)
 
-(terpri)
-(format t "After setTo10: x = ~D~%" x)
+
+(format t "After setTo10:    x = ~D~%" x)
 
 (plusOne x)
 
-(format t "After plusOne: x = ~D~%" x)
+(format t "After plusOne:    x = ~D~%" x)
+
+(incf x)
+
+(format t "After incf:       x = ~D~%" x)
