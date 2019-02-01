@@ -1,0 +1,13 @@
+#!/bin/sh
+
+touch clisptempexec
+echo "#|" > clisptempexec
+echo 'exec sbcl --noinform --load $0 --end-toplevel-options "$@"' >> clisptempexec
+echo "|#" >> clisptempexec
+cat $1 >> clisptempexec
+echo "(exit)" >> clisptempexec
+
+chmod +x clisptempexec
+./clisptempexec
+rm ./clisptempexec
+

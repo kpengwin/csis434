@@ -17,10 +17,12 @@
 
 (setq l '(bacon and eggs))
 
-(print (lat? l))
+(write (lat? l))
+(terpri)
 
 (setq lat '(mashed potatoes and meat gravy))
 
 (setq a 'cranberry)
 
-(print (member? a lat))
+(write (member? a lat))
+(terpri)
