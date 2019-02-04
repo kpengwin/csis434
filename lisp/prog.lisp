@@ -11,3 +11,4 @@
 (print (type-of ch))
 (print (type-of bg))
 (print (type-of r))
+(terpri)
