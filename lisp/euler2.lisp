@@ -13,3 +13,9 @@
 
 (defun answer ()
   (apply '+ (evenfibupto 4000000)))
+
+;;; for question 25
+
+(defun answer25 ()
+  (let ((big-list (fiboupto (expt 10 999) '(1 1))))
+    (+ 1 (list-length big-list))))
