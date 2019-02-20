@@ -70,4 +70,23 @@ what_age(Suspect) :- age(Suspect,Age),
     !,
     format('~w is ~w years old.~n', [Suspect, Age]).
 
+murderer_gender :- crime(Gender,_,_,_,_,_),
+		     !,
+		     format('The murderer is ~w.~n', [Gender]).
+murderer_name :- crime(_,Name,_,_,_,_),
+		     !,
+		     format('The murderer is ~w.~n', [Name]).
+murderer_time :- crime(_,_,Time,_,_,_),
+		     !,
+		     format('The murder happened during ~w.~n', [Time]).
+murderer_location :- crime(_,_,_,Location,_,_),
+		     !,
+		     format('The murderer happened at ~w.~n', [Location]).
+murderer_weapon :- crime(_,_,_,_,Weapon,_),
+		     !,
+		     format('The murderer used the ~w.~n', [Weapon]).
+murderer_age :- crime(_,_,_,_,_,Age),
+		     !,
+		     format('The murderer is ~w years old.~n', [Age]).
+
 
