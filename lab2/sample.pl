@@ -44,6 +44,27 @@ is_murderer(Suspect) :- \+crime(_,Suspect,_,_,_,_),
     format('~w is not the murderer.~n', [Suspect]),
     fail.
 
+is_murder_weapon(Weapon) :- crime(_,_,_,_,Weapon,_),
+    !,
+    format('~w is the murder weapon.~n', [Weapon]).
+is_murder_weapon(Weapon) :- \+crime(_,_t,_,_,Weapon,_),
+    format('~w is not the murder weapon.~n', [Weapon]),
+    fail.
+
+is_murder_time(Time) :- crime(_,_,Time,_,_,_),
+    !,
+    format('~w is the time of the murder.~n', [Time]).
+is_murder_time(Time) :- \+crime(_,_,Time,_,_,_),
+    format('~w is not the time of the murder.~n', [Time]),
+    fail.
+
+is_murder_location(Location) :- crime(_,_,_,Location,_,_),
+    !,
+    format('~w is the location of the murder.~n', [Location]).
+is_murder_location(Location) :- \+crime(_,_,_,Location,_,_),
+    format('~w is not the location of the murder.~n', [Location]),
+    fail.
+
 where_was(Suspect,Time) :- tl(Suspect,Time,Location),
     !,
     format('~w was at ~w during ~w.~n', [Suspect, Location, Time]).

@@ -27,36 +27,36 @@
 ** TODO Format user output for all clues
 
 *** All clues
-| Number | Clue Prog | Generic Template                                                         | Query Template              | Formatted? |
-|--------+-----------+--------------------------------------------------------------------------+-----------------------------+------------|
-|      1 |        05 | Where was /suspect/ in random timeofday                                  | where_was(Suspect, Time)    | YES        |
-|      2 |        09 | Was /suspect/ ever in /location/?                                        | was_ever(Suspect, Location) | YES        |
-|      3 |        14 | What is /suspect’s/ weapon?                                              | which_weapon(Suspect)       | YES        |
-|      4 |        19 | List a gender /suspect/.                                                 | gender(Suspect)             | YES        |
-|      5 |        24 | How old is /suspect/?                                                    | what_age(Suspect)           | YES        |
-|      6 |        27 | Who are all the /gender/?                                                |                             |            |
-|      7 |        31 | Are any suspects over /integer years/ old?                               |                             |            |
-|      8 |        35 | Are any suspects exactly /integer years/ old?                            |                             |            |
-|      9 |        40 | How many suspects use /weapon/?                                          |                             |            |
-|     10 |        44 | What suspects use /weapon/?                                              |                             |            |
-|     11 |        47 | Where was /suspect/ all day?                                             |                             |            |
-|     12 |        51 | Where /suspect1/ and /suspect2/ ever at the same place at the same time? |                             |            |
-|     13 |        64 | What is the gender of the murderer?                                      | murderer_gender.            | YES        |
-|     14 |        56 | What is the name of the murderer?                                        | murderer_name.              | YES        |
-|     15 |        59 | When was the murder committed?                                           | murderer_time.              | YES        |
-|     16 |        62 | Where was the murder committed?                                          | murderer_location.          | YES        |
-|     17 |        65 | What weapon was used for the murder?                                     | murderer_weapon.            | YES        |
-|     18 |        68 | How old is the murderer?                                                 | murderer_age.               | YES        |
-|     19 |        71 | /Suspect/ was not the murderer                                           |                             |            |
-|     20 |        74 | /Weapon/ was not used in the murderer                                    |                             |            |
-|     21 |        77 | The murder did not occur at /time/?                                      |                             |            |
-|     22 |        80 | The murder did not occur at /location/?                                  |                             |            |
-|     23 |        85 | When was /suspect/ at /location/?                                        |                             |            |
-|     24 |        88 | /Suspect/ was never at /location/?                                       |                             |            |
-|     25 |        91 | What are the /locations/?                                                |                             |            |
-|     26 |        94 | When are the /times/?                                                    |                             |            |
-|     27 |        96 | Is the murderer /suspect1/ or /suspect2/?                                |                             |            |
-|     28 |        98 | Was the murder weapon /weapon1/ or /weapon2/?                            |                             |            |
+| Number | Clue Prog | Generic Template                                                         | Query Template                | Formatted? |
+|--------+-----------+--------------------------------------------------------------------------+-------------------------------+------------|
+|      1 |        05 | Where was /suspect/ in random timeofday                                  | where_was(Suspect, Time)      | YES        |
+|      2 |        09 | Was /suspect/ ever in /location/?                                        | was_ever(Suspect, Location)   | YES        |
+|      3 |        14 | What is /suspect’s/ weapon?                                              | which_weapon(Suspect)         | YES        |
+|      4 |        19 | List a gender /suspect/.                                                 | gender(Suspect)               | YES        |
+|      5 |        24 | How old is /suspect/?                                                    | what_age(Suspect)             | YES        |
+|      6 |        27 | Who are all the /gender/?                                                |                               |            |
+|      7 |        31 | Are any suspects over /integer years/ old?                               |                               |            |
+|      8 |        35 | Are any suspects exactly /integer years/ old?                            |                               |            |
+|      9 |        40 | How many suspects use /weapon/?                                          |                               |            |
+|     10 |        44 | What suspects use /weapon/?                                              |                               |            |
+|     11 |        47 | Where was /suspect/ all day?                                             |                               |            |
+|     12 |        51 | Where /suspect1/ and /suspect2/ ever at the same place at the same time? |                               |            |
+|     13 |        64 | What is the gender of the murderer?                                      | murderer_gender.              | YES        |
+|     14 |        56 | What is the name of the murderer?                                        | murderer_name.                | YES        |
+|     15 |        59 | When was the murder committed?                                           | murderer_time.                | YES        |
+|     16 |        62 | Where was the murder committed?                                          | murderer_location.            | YES        |
+|     17 |        65 | What weapon was used for the murder?                                     | murderer_weapon.              | YES        |
+|     18 |        68 | How old is the murderer?                                                 | murderer_age.                 | YES        |
+|     19 |        71 | /Suspect/ was not the murderer                                           | is_murderer(Suspect).         | YES        |
+|     20 |        74 | /Weapon/ was not used in the murderer                                    | is_murder_weapon(Weapon)      | YES        |
+|     21 |        77 | The murder did not occur at /time/?                                      | is_murder_time(Time).         | YES        |
+|     22 |        80 | The murder did not occur at /location/?                                  | is_murder_location(Location). | YES        |
+|     23 |        85 | When was /suspect/ at /location/?                                        |                               |            |
+|     24 |        88 | /Suspect/ was never at /location/?                                       | was_ever(Suspect, Location)   | YES        |
+|     25 |        91 | What are the /locations/?                                                |                               |            |
+|     26 |        94 | When are the /times/?                                                    |                               |            |
+|     27 |        96 | Is the murderer /suspect1/ or /suspect2/?                                |                               |            |
+|     28 |        98 | Was the murder weapon /weapon1/ or /weapon2/?                            |                               |            |
 
 
 * Stretch Goals
