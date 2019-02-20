@@ -1,5 +1,5 @@
-#-*- mode: org -*-
 #+TITLE: Lab2 Planning
+#+STARTUP: showall
 #+OPTIONS: toc:nil
 
 * Rules Generator
