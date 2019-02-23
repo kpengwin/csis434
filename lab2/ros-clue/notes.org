@@ -1,0 +1,6 @@
+
+* *export-db* format
+| age         | crime         | gender         | time-location        | weapon        |
+|-------------+---------------+----------------+----------------------+---------------|
+| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
+              |               |                |                      |               |

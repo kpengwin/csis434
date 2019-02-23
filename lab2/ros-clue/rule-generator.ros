@@ -1,0 +1,159 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#|
+exec ros -Q -- $0 "$@"
+|#
+(progn ;;init forms
+  (ros:ensure-asdf)
+  ;;#+quicklisp(ql:quickload '() :silent t)
+  )
+
+(defpackage :ros.script.rule-generator.3759929116
+  (:use :cl))
+(in-package :ros.script.rule-generator.3759929116)
+
+(defvar *weapons* nil)
+(defvar *locations* nil)
+(defvar *suspects* nil)
+(defvar *times* nil)
+(defvar murderer nil)
+
+(defvar *export-db* '(nil nil nil nil nil))
+;;*export-db* format:
+;;| age         | crime         | gender         | time-location        | weapon        |
+;;|-------------+---------------+----------------+----------------------+---------------|
+;;| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
+
+;;simplify syntax for inserting into a sublist
+(defmacro sublist-insert (place var value)
+  `(setf (,place ,var) (cons ,value (,place ,var))))
+
+;;prompt-read: function adapted from Peter Siebel's book "Practical Common Lisp" Section 3
+(defun prompt-read (prompt)
+  (format *query-io* "~a >" prompt)
+  (force-output *query-io*)
+  (read-line *query-io*))
+
+;;save-db: function adapted from Peter Siebel's book "Practical Common Lisp" Section 3
+(defun save-db (filename db)
+  (with-open-file (out filename
+                   :direction :output
+                   :if-exists :supersede)
+    (with-standard-io-syntax
+      (print db out))))
+
+(defmacro adder (name single global)
+  `(defun ,name (,single) (setf ,global (cons ,single ,global))))
+(adder add-weapon weapon *weapons*)
+(adder add-location location *locations*)
+(adder add-suspect suspect *suspects*)
+(adder add-time time *times*)
+
+(defun user-add-weapon ()
+  (add-weapon (prompt-read "What weapon would you like to add?")))
+
+(defun user-add-location ()
+  (add-location (prompt-read "What location would you like to add?")))
+
+(defun user-add-time ()
+  (add-time (prompt-read "What time would you like to add?")))
+
+(defun user-add-suspect ()
+  (prog ((suspect nil))
+     (setf suspect (cons (prompt-read "What is the name of the suspect?") suspect))
+     (setf suspect (cons (prompt-read "What is the age of the suspect?") suspect))
+     (setf suspect (cons (prompt-read "What is the gender of the suspect?") suspect))
+     (add-suspect suspect)))
+
+(defun clue-game-generator-input ()
+  (loop for x from 1 to (parse-integer
+			 (prompt-read "How many weapons (Max 8)?"))
+     do (user-add-weapon))
+  (loop for x from 1 to (parse-integer
+			 (prompt-read "How many players (Max 10)?"))
+     do (user-add-suspect))
+  (loop for x from 1 to (parse-integer
+			 (prompt-read "How many locations (Max 6)?"))
+     do (user-add-location))
+  (loop for x from 1 to (parse-integer
+			 (prompt-read "How many times (Max 6)?"))
+     do (user-add-time)))
+
+(defun pick-a-murderer ()
+  (prog* ((rng (random (list-length *suspects*))) (return-val (nth rng *suspects*)))
+     (setf *suspects* (remove return-val *suspects* :test #'equal))
+     (return-from pick-a-murderer return-val)))
+
+(defun generate-age (suspect)
+  (sublist-insert first *export-db* (list (third suspect) (second suspect)))
+  (format nil "age(~(~a~),~d)." (third suspect) (second suspect)))
+
+(defun generate-gender (suspect)
+  (cond
+    ((equalp "m" (first suspect)) (progn
+				   (sublist-insert third *export-db* (list "male" (third suspect)))
+				   (return-from generate-gender (format nil "male(~(~a~))." (third suspect)))))
+     (t (progn
+	  (sublist-insert third *export-db* (list "female" (third suspect)))
+	  (return-from generate-gender (format nil "female(~(~a~))." (third suspect)))))))
+
+(defun generate-weapons (suspect)
+  (prog ((rng (random (list-length *weapons*))))
+     (sublist-insert fifth *export-db* (list (third suspect) (nth rng *weapons*)))
+     (return-from generate-weapons (format nil "weapon(~(~a,~a~))." (third suspect) (nth rng *weapons*)))))
+
+(defun generate-time-locations (suspect time)
+  (prog ((rng (random (list-length *locations*))))
+     (sublist-insert fourth *export-db* (list (third suspect) time (nth rng *locations*)))
+     (return-from generate-time-locations (format nil "tl(~(~a,~a,~a~))." (third suspect) time (nth rng *locations*)))))
+
+(defun gender (letter)
+  (cond
+    ((equalp letter "f") (return-from gender "female"))
+    (t (return-from gender "male"))))
+
+(defun generate-murderer-stuff (murderer)
+  (prog* ((rng-weapon (random (list-length *weapons*)))
+        (rng-location (random (list-length *locations*)))
+        (rng-time (random (list-length *times*))))
+     (sublist-insert second *export-db* (list (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-weapon *weapons*) (second murderer)))
+     (return-from generate-murderer-stuff (append
+      (list (generate-age murderer))
+      (list (generate-gender murderer))
+      (loop for x from 0 to (- (list-length *times*) 1) collecting
+           (cond
+             ((= rng-time x) (format nil "tl(~(~a,~a,~a~))." (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
+             (t (generate-time-locations murderer (nth x *times*)))))
+      (list (format nil "weapon(~(~a,~a~))." (third murderer) (nth rng-weapon *weapons*)))
+      (list (format nil "crime(~(~a,~a,~a,~a,~a,~a~))."
+                    (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))))))
+
+(defun wipe-vars ()
+  (setf *weapons* nil)
+  (setf *suspects* nil)
+  (setf *locations* nil)
+  (setf *times* nil))
+
+(defun clue-game-generator-output ()
+  ;; need to start by removing the actual murderer
+  (setf murderer (pick-a-murderer))
+  (prog ((prolog-statements (append
+                             (loop for x in *suspects* collecting (generate-age x))
+                             (loop for x in *suspects* collecting (generate-gender x))
+                             (loop for x in *suspects* collecting (generate-weapons x))
+                             (loop for x in *suspects* appending
+                                  (loop for y in *times* collecting (generate-time-locations x y)))
+                             (generate-murderer-stuff murderer))))
+     (setf prolog-statements (sort prolog-statements #'string-lessp))
+     (save-db "db.pl" *export-db*)
+     (format t "~%")
+     (loop for x in prolog-statements do (format t "~a~%" x))))
+
+(defun main (&rest argv)
+  (declare (ignorable argv))
+  (setf *random-state* (make-random-state t))
+  (clue-game-generator-input)
+  (clue-game-generator-output)
+  (format t "~%"))
+
+;;; vim: set ft=lisp lisp:
