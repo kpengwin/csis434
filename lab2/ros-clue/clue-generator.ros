@@ -12,12 +12,31 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.clue-generator.3759928521)
 
-(defvar *db*)
+(defvar *import-db*)
+;;*import-db* format:
+;;| age         | crime         | gender         | time-location        | weapon        |
+;;|-------------+---------------+----------------+----------------------+---------------|
+;;| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
+(defvar *ages nil)
+(defvar *crime* nil)
+(defvar *genders* nil)
+(defvar *time-locations* nil)
+(defvar *weapons* nil)
+
 
 (defun load-db (filename)
   (with-open-file (in filename)
     (with-standard-io-syntax
-      (setf *db* (read in)))))
+      (setf *import-db* (read in))))
+  (setf *ages (first *import-db*))
+  (setf *crime* (second *import-db*))
+  (setf *genders* (third *import-db*))
+  (setf *time-locations* (fourth *import-db*))
+  (setf *weapons* (fifth *import-db*)))
+
+(defun random-element (target-list)
+  (let ((rng (random (list-length target-list))))
+    (nth rng target-list)))
 
 (defun between (left-end number right-end)
   (cond
@@ -26,7 +45,6 @@ exec ros -Q -- $0 "$@"
     (t nil)))
 
 (defun generate-clue ()
-  (setf *random-state* (make-random-state t))
   (let ((rng (random 100)))
     (cond
       ((between 0 rng 5)
@@ -91,6 +109,9 @@ exec ros -Q -- $0 "$@"
 (defun main (&rest argv)
   (declare (ignorable argv))
   (load-db "db.pl")
-  (print *db*)
+  (print *import-db*)
+  (setf *random-state* (make-random-state t))
+  (print (random-element *weapons*))
   (print (generate-clue)))
+
 ;;; vim: set ft=lisp lisp:
