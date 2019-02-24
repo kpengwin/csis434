@@ -42,6 +42,8 @@ exec ros -Q -- $0 "$@"
     (with-standard-io-syntax
       (print db out))))
 
+
+;;handling adding to the globals
 (defmacro adder (name single global)
   `(defun ,name (,single) (setf ,global (cons ,single ,global))))
 (adder add-weapon weapon *weapons*)
@@ -49,6 +51,7 @@ exec ros -Q -- $0 "$@"
 (adder add-suspect suspect *suspects*)
 (adder add-time time *times*)
 
+;;getting input from the users
 (defun user-add-weapon ()
   (add-weapon (prompt-read "What weapon would you like to add?")))
 
@@ -65,6 +68,7 @@ exec ros -Q -- $0 "$@"
      (setf suspect (cons (prompt-read "What is the gender of the suspect?") suspect))
      (add-suspect suspect)))
 
+;;this is the main input loop
 (defun clue-game-generator-input ()
   (loop for x from 1 to (parse-integer
 			 (prompt-read "How many weapons (Max 8)?"))
@@ -79,20 +83,23 @@ exec ros -Q -- $0 "$@"
 			 (prompt-read "How many times (Max 6)?"))
      do (user-add-time)))
 
+;;randomly remove one of the suspects so that we can make sure that they are at the location for the murder
 (defun pick-a-murderer ()
   (prog* ((rng (random (list-length *suspects*))) (return-val (nth rng *suspects*)))
      (setf *suspects* (remove return-val *suspects* :test #'equal))
      (return-from pick-a-murderer return-val)))
 
+;;generate functions are for making the prolog and export
 (defun generate-age (suspect)
   (sublist-insert first *export-db* (list (third suspect) (second suspect)))
   (format nil "age(~(~a~),~d)." (third suspect) (second suspect)))
 
 (defun generate-gender (suspect)
   (cond
-    ((equalp "m" (first suspect)) (progn
-				   (sublist-insert third *export-db* (list "male" (third suspect)))
-				   (return-from generate-gender (format nil "male(~(~a~))." (third suspect)))))
+    ((equalp "m" (first suspect))
+     (progn
+       (sublist-insert third *export-db* (list "male" (third suspect)))
+       (return-from generate-gender (format nil "male(~(~a~))." (third suspect)))))
      (t (progn
 	  (sublist-insert third *export-db* (list "female" (third suspect)))
 	  (return-from generate-gender (format nil "female(~(~a~))." (third suspect)))))))
@@ -107,11 +114,14 @@ exec ros -Q -- $0 "$@"
      (sublist-insert fourth *export-db* (list (third suspect) time (nth rng *locations*)))
      (return-from generate-time-locations (format nil "tl(~(~a,~a,~a~))." (third suspect) time (nth rng *locations*)))))
 
+;;need to be able to convert between m and f and male and female
 (defun gender (letter)
   (cond
     ((equalp letter "f") (return-from gender "female"))
-    (t (return-from gender "male"))))
+    ((equalp letter "m") (return-from gender "male"))
+    (t (return-from gender letter))))
 
+;;since we removed the murderer, we have to add all the entries for it
 (defun generate-murderer-stuff (murderer)
   (prog* ((rng-weapon (random (list-length *weapons*)))
           (rng-location (random (list-length *locations*)))
@@ -131,12 +141,14 @@ exec ros -Q -- $0 "$@"
 	(list (format nil "crime(~(~a,~a,~a,~a,~a,~a~))."
 		      (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))))))
 
+;;utility function for live codinge
 (defun wipe-vars ()
   (setf *weapons* nil)
   (setf *suspects* nil)
   (setf *locations* nil)
   (setf *times* nil))
 
+;;generate the output all
 (defun clue-game-generator-output ()
   ;; need to start by removing the actual murderer
   (setf murderer (pick-a-murderer))
@@ -152,6 +164,7 @@ exec ros -Q -- $0 "$@"
      (format t "~%")
      (loop for x in prolog-statements do (format t "~a~%" x))))
 
+;;it's main. ignores arguments and does what we need it to.
 (defun main (&rest argv)
   (declare (ignorable argv))
   (setf *random-state* (make-random-state t))
