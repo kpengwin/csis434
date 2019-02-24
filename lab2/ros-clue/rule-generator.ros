@@ -114,19 +114,22 @@ exec ros -Q -- $0 "$@"
 
 (defun generate-murderer-stuff (murderer)
   (prog* ((rng-weapon (random (list-length *weapons*)))
-        (rng-location (random (list-length *locations*)))
-        (rng-time (random (list-length *times*))))
-     (sublist-insert second *export-db* (list (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-weapon *weapons*) (second murderer)))
-     (return-from generate-murderer-stuff (append
-      (list (generate-age murderer))
-      (list (generate-gender murderer))
-      (loop for x from 0 to (- (list-length *times*) 1) collecting
-           (cond
-             ((= rng-time x) (format nil "tl(~(~a,~a,~a~))." (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
-             (t (generate-time-locations murderer (nth x *times*)))))
-      (list (format nil "weapon(~(~a,~a~))." (third murderer) (nth rng-weapon *weapons*)))
-      (list (format nil "crime(~(~a,~a,~a,~a,~a,~a~))."
-                    (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))))))
+          (rng-location (random (list-length *locations*)))
+          (rng-time (random (list-length *times*))))
+     (sublist-insert second *export-db* (list (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))
+     (sublist-insert fourth *export-db* (list (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
+     (sublist-insert fifth *export-db* (list (third murderer) (nth rng-weapon *weapons*)))
+     (return-from generate-murderer-stuff
+       (append
+	(list (generate-age murderer))
+	(list (generate-gender murderer))
+	(loop for x from 0 to (- (list-length *times*) 1) collecting
+	     (cond
+	       ((= rng-time x) (format nil "tl(~(~a,~a,~a~))." (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
+	       (t (generate-time-locations murderer (nth x *times*)))))
+	(list (format nil "weapon(~(~a,~a~))." (third murderer) (nth rng-weapon *weapons*)))
+	(list (format nil "crime(~(~a,~a,~a,~a,~a,~a~))."
+		      (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))))))
 
 (defun wipe-vars ()
   (setf *weapons* nil)
