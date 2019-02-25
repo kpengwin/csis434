@@ -10,6 +10,8 @@
 
 ** TODO Add static functions
 
+** TODO Add location list export
+
 * Clue Generator
 
 ** DONE Giant case statement
@@ -24,21 +26,23 @@
 
 ** IN-PROGRESS Have way to display all the clues
 
+** TODO List all matches
+
 ** TODO Format user output for all clues
 
 *** All clues
 | Number | Clue Prog | Generic Template                                                         | Query Template                | Formatted? |
 |--------+-----------+--------------------------------------------------------------------------+-------------------------------+------------|
-|      1 |        05 | Where was /suspect/ in random timeofday                                  | where_was(Suspect, Time)      | YES        |
+|      1 |        05 | Where was /suspect/ in /timeofday/                                       | where_was(Suspect, Time)      | YES        |
 |      2 |        09 | Was /suspect/ ever in /location/?                                        | was_ever(Suspect, Location)   | YES        |
 |      3 |        14 | What is /suspect’s/ weapon?                                              | which_weapon(Suspect)         | YES        |
 |      4 |        19 | List a gender /suspect/.                                                 | gender(Suspect)               | YES        |
 |      5 |        24 | How old is /suspect/?                                                    | what_age(Suspect)             | YES        |
-|      6 |        27 | Who are all the /gender/?                                                |                               |            |
+|      6 |        27 | Who are all the /gender/?                                                | all_males. OR all_females.    | YES        |
 |      7 |        31 | Are any suspects over /integer years/ old?                               |                               |            |
-|      8 |        35 | Are any suspects exactly /integer years/ old?                            |                               |            |
-|      9 |        40 | How many suspects use /weapon/?                                          |                               |            |
-|     10 |        44 | What suspects use /weapon/?                                              |                               |            |
+|      8 |        35 | Are any suspects exactly /integer years/ old?                            | exact_age(Age).               | YES        |
+|      9 |        40 | How many suspects use /weapon/?                                          | how_many_users(Weapon).       | YES        |
+|     10 |        44 | What suspects use /weapon/?                                              | what_users(Weapon).           | YES        |
 |     11 |        47 | Where was /suspect/ all day?                                             |                               |            |
 |     12 |        51 | Where /suspect1/ and /suspect2/ ever at the same place at the same time? |                               |            |
 |     13 |        64 | What is the gender of the murderer?                                      | murderer_gender.              | YES        |

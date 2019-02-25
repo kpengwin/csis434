@@ -111,3 +111,22 @@ murderer_age :- crime(_,_,_,_,_,Age),
 		     format('The murderer is ~w years old.~n', [Age]).
 
 
+all_males :- findall(X, male(X), Y),
+	     format('The males are ~w.~n', [Y]).
+
+all_females :- findall(X, female(X), Y),
+	       format('The females are ~w.~n', [Y]).
+
+what_users(Weapon) :- findall(X, weapon(X, Weapon), Suspects),
+		      format('The fingerprints on the gun match ~w.~n', [Suspects]).
+
+how_many_users(Weapon) :- findall(X, weapon(X, Weapon), Suspects),
+			  length(Suspects, Length),
+			  format('There are ~w sets of fingerprints on the ~w.~n', [Length,Weapon]).
+
+exact_age(Age) :- findall(X, age(X, Age), Suspects),
+		  exists_exact_age(Suspects, Age).
+
+exists_exact_age([], Age) :- !, format('There are no suspects of exactly ~w years.~n', [Age]).
+exists_exact_age(_, Age) :- !, format('There is someone who is exactly ~w years old.~n', [Age]).
+
