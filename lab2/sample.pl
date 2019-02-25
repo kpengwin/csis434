@@ -142,4 +142,50 @@ over_age(Age) :- age(X, Overage),
 over_age(Age) :- format('There are no suspects over ~w years.~n', [Age]), fail.
 
 
+all_day(Suspect) :- findall(X, tl(Suspect, _, X), Locations),
+		    findall(Y, tl(Suspect, Y, _), Times),
+		    pairwise(Locations, Times, Pairs),
+		    format('~w was spotted as follows:~n~w~n', [Suspect, Pairs]).
 
+pairwise([],[],[]).
+pairwise([A|RestA],[B|RestB], [[A,B]|Rest]) :- pairwise(RestA,RestB,Rest). 
+
+were_same_place(Suspect1,Suspect2) :- findall(X, tl(Suspect1, _, X), Locations1),
+				      findall(Y, tl(Suspect2, _, Y), Locations2),
+				      pairwise(Locations1,Locations2,PairedLocations),
+				      pairs_match(PairedLocations).
+match([A,B|R]) :- A=B.
+
+pairs_match([]) :- format('They were never in the same location.', []), fail.
+pairs_match([H|T]) :- match(H),
+		      !, format('They were in the same location at some point.~n', []).
+pairs_match([H|T]) :- pairs_match(T).
+		      
+
+locations :- findall(X, tl(_,_,X),Locations),
+	     sort(Locations,SLocations),
+	     format('The locations are:~n~w~n', [SLocations]).
+
+times :- findall(X, tl(_,X,_),Times),
+	 sort(Times,STimes),
+	 format('The times are:~n~w~n', [STimes]).
+
+narrow_murderer_2(Suspect1, Suspect2) :- crime(_,Suspect1,_,_,_,_),
+				!,
+				format('One of those is the murderer.~n', []).
+narrow_murderer_2(Suspect1, Suspect2) :- crime(_,Suspect2,_,_,_,_),
+				!,
+				format('One of those is the murderer.~n', []).
+narrow_murderer_2(Suspect1, Suspect2) :- !,				!,
+				format('Neither of those is the murderer.~n', []),
+				fail.
+
+narrow_weapon_2(Weapon1, Weapon2) :- crime(_,_,_,_,Weapon1,_),
+				!,
+				format('One of those is the murder weapon.~n', []).
+narrow_weapon_2(Weapon1, Weapon2) :- crime(_,_,_,_,Weapon2,_),
+				!,
+				format('One of those is the murder weapon.~n', []).
+narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
+				format('Neither of those is the murder weapon.~n', []),
+				fail.
