@@ -17,7 +17,7 @@ exec ros -Q -- $0 "$@"
 ;;| age         | crime         | gender         | time-location        | weapon        |
 ;;|-------------+---------------+----------------+----------------------+---------------|
 ;;| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
-(defvar *ages nil)
+(defvar *ages* nil)
 (defvar *crime* nil)
 (defvar *genders* nil)
 (defvar *time-locations* nil)
@@ -28,7 +28,7 @@ exec ros -Q -- $0 "$@"
   (with-open-file (in filename)
     (with-standard-io-syntax
       (setf *import-db* (read in))))
-  (setf *ages (first *import-db*))
+  (setf *ages* (first *import-db*))
   (setf *crime* (second *import-db*))
   (setf *genders* (third *import-db*))
   (setf *time-locations* (fourth *import-db*))
@@ -45,18 +45,19 @@ exec ros -Q -- $0 "$@"
     (t nil)))
 
 (defun generate-clue ()
-  (let ((rng (random 100)))
+					;(let ((rng (random 100)))
+  (let ((rng 21))
     (cond
       ((between 0 rng 5)
-       (format nil "Clue 1"))
+       (format nil "where_was(~(~a, ~a~))." (first (random-element *time-locations*)) (second (random-element *time-locations*))))
       ((between 6 rng 9)
        (format nil "Clue 2"))
       ((between 10 rng 14)
-       (format nil "Clue 3"))
+       (format nil "which_weapon(~(~a~))." (first (random-element *weapons*))))
       ((between 15 rng 19)
-       (format nil "Clue 4"))
+       (format nil "gender(~(~a~))." (first (random-element *ages*))))
       ((between 20 rng 24)
-       (format nil "Clue 5"))
+       (format nil "what_age(~(~a~))." (first (random-element *ages*))))
       ((between 25 rng 27)
        (format nil "Clue 6"))
       ((between 28 rng 31)
