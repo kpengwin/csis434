@@ -39,7 +39,7 @@
 |      4 |        19 | List a gender /suspect/.                                                 | gender(Suspect)               | YES        |
 |      5 |        24 | How old is /suspect/?                                                    | what_age(Suspect)             | YES        |
 |      6 |        27 | Who are all the /gender/?                                                | all_males. OR all_females.    | YES        |
-|      7 |        31 | Are any suspects over /integer years/ old?                               |                               |            |
+|      7 |        31 | Are any suspects over /integer years/ old?                               | over_age(Age).                | YES        |
 |      8 |        35 | Are any suspects exactly /integer years/ old?                            | exact_age(Age).               | YES        |
 |      9 |        40 | How many suspects use /weapon/?                                          | how_many_users(Weapon).       | YES        |
 |     10 |        44 | What suspects use /weapon/?                                              | what_users(Weapon).           | YES        |
@@ -55,7 +55,7 @@
 |     20 |        74 | /Weapon/ was not used in the murderer                                    | is_murder_weapon(Weapon)      | YES        |
 |     21 |        77 | The murder did not occur at /time/?                                      | is_murder_time(Time).         | YES        |
 |     22 |        80 | The murder did not occur at /location/?                                  | is_murder_location(Location). | YES        |
-|     23 |        85 | When was /suspect/ at /location/?                                        |                               |            |
+|     23 |        85 | When was /suspect/ at /location/?                                        | when_was(Suspect, Location)   | YES        |
 |     24 |        88 | /Suspect/ was never at /location/?                                       | was_ever(Suspect, Location)   | YES        |
 |     25 |        91 | What are the /locations/?                                                |                               |            |
 |     26 |        94 | When are the /times/?                                                    |                               |            |

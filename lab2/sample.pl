@@ -76,6 +76,12 @@ was_ever(Suspect,Location) :- \+tl(Suspect,_,Location),
     format('~w was never at ~w.~n', [Suspect, Location]),
     fail.
 
+when_was(Suspect,Location) :- tl(Suspect,Time,Location),
+			      !,
+			      findall(X, tl(Suspect,X,Location), Times),
+			      format('~w was at ~w during ~w.~n', [Suspect, Location, Times]).
+when_was(Suspect,Location) :- !, format('~w was never at ~w.~n', [Suspect, Location]), fail.
+
 which_weapon(Suspect) :- weapon(Suspect, Weapon),
     !,
     format('~w\'s fingerprints are on the ~w.~n', [Suspect, Weapon]).
@@ -127,6 +133,13 @@ how_many_users(Weapon) :- findall(X, weapon(X, Weapon), Suspects),
 exact_age(Age) :- findall(X, age(X, Age), Suspects),
 		  exists_exact_age(Suspects, Age).
 
-exists_exact_age([], Age) :- !, format('There are no suspects of exactly ~w years.~n', [Age]).
+exists_exact_age([], Age) :- !, format('There are no suspects of exactly ~w years.~n', [Age]), fail.
 exists_exact_age(_, Age) :- !, format('There is someone who is exactly ~w years old.~n', [Age]).
+
+over_age(Age) :- age(X, Overage),
+		 Overage>Age,
+		 !, format('There is at least one suspect who is over ~w years old.~n', [Age]).
+over_age(Age) :- format('There are no suspects over ~w years.~n', [Age]), fail.
+
+
 
