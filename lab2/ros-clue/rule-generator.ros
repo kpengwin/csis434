@@ -18,7 +18,7 @@ exec ros -Q -- $0 "$@"
 (defvar *times* nil)
 (defvar murderer nil)
 
-(defvar *export-db* '(nil nil nil nil nil))
+(defvar *export-db* '(nil nil nil nil nil nil nil nil nil nil nil))
 ;;*export-db* format:
 ;;| age         | crime         | gender         | time-location        | weapon        |
 ;;|-------------+---------------+----------------+----------------------+---------------|
@@ -126,22 +126,37 @@ exec ros -Q -- $0 "$@"
   (prog* ((rng-weapon (random (list-length *weapons*)))
           (rng-location (random (list-length *locations*)))
           (rng-time (random (list-length *times*))))
-     (sublist-insert second *export-db* (list (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))
-     (sublist-insert fourth *export-db* (list (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
-     (sublist-insert fifth *export-db* (list (third murderer) (nth rng-weapon *weapons*)))
+     (sublist-insert second *export-db* (list (gender (first murderer))
+					      (third murderer)
+					      (nth rng-time *times*)
+					      (nth rng-location *locations*)
+					      (nth rng-weapon *weapons*)
+					      (second murderer)))
+     (sublist-insert fourth *export-db* (list (third murderer)
+					      (nth rng-time *times*)
+					      (nth rng-location *locations*)))
+     (sublist-insert fifth *export-db* (list (third murderer)
+					     (nth rng-weapon *weapons*)))
+     (sublist-insert );;;;;;;;;;;;;;;;;;;;;;;;HEREEEEEE
      (return-from generate-murderer-stuff
        (append
 	(list (generate-age murderer))
 	(list (generate-gender murderer))
 	(loop for x from 0 to (- (list-length *times*) 1) collecting
 	     (cond
-	       ((= rng-time x) (format nil "tl(~(~a,~a,~a~))." (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
+	       ((= rng-time x) (format nil "tl(~(~a,~a,~a~))."
+				       (third murderer) (nth rng-time *times*) (nth rng-location *locations*)))
 	       (t (generate-time-locations murderer (nth x *times*)))))
 	(list (format nil "weapon(~(~a,~a~))." (third murderer) (nth rng-weapon *weapons*)))
 	(list (format nil "crime(~(~a,~a,~a,~a,~a,~a~))."
-		      (gender (first murderer)) (third murderer) (nth rng-time *times*) (nth rng-location *locations*) (nth rng-weapon *weapons*) (second murderer)))))))
+		      (gender (first murderer))
+		      (third murderer)
+		      (nth rng-time *times*)
+		      (nth rng-location *locations*)
+		      (nth rng-weapon *weapons*)
+		      (second murderer)))))))
 
-;;utility function for live codinge
+;;utility function for live coding
 (defun wipe-vars ()
   (setf *weapons* nil)
   (setf *suspects* nil)
@@ -160,6 +175,9 @@ exec ros -Q -- $0 "$@"
                                   (loop for y in *times* collecting (generate-time-locations x y)))
                              (generate-murderer-stuff murderer))))
      (setf prolog-statements (sort prolog-statements #'string-lessp))
+     (sublist-insert sixth *export-db* *weapons*)
+     (sublist-insert seventh *export-db* *locations*)
+     (sublist-insert eighth *export-db* *suspects*)
      (save-db "db.pl" *export-db*)
      (format t "~%")
      (loop for x in prolog-statements do (format t "~a~%" x))))

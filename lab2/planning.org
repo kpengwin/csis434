@@ -12,6 +12,10 @@
 
 ** TODO Add location list export
 
+| age         | crime         | gender         | time-location        | weapons       | all-weapon-list       | all-location-list |
+|-------------+---------------+----------------+----------------------+---------------+-----------------------+-------------------|
+| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) | (weapon1,weapon2,etc) | (loc1,loc2,etc)   |
+
 * Clue Generator
 
 ** DONE Giant case statement
