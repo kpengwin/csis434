@@ -10,7 +10,7 @@
 
 ** TODO Add static functions
 
-** TODO Add location list export
+** DONE Add location list export
 
 | age         | crime         | gender         | time-location        | weapons       | all-weapon-list       | all-location-list |
 |-------------+---------------+----------------+----------------------+---------------+-----------------------+-------------------|
