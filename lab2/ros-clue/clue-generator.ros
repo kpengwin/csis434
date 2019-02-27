@@ -14,9 +14,11 @@ exec ros -Q -- $0 "$@"
 
 (defvar *import-db*)
 ;;*import-db* format:
-;;| age         | crime         | gender         | time-location        | weapon        |
-;;|-------------+---------------+----------------+----------------------+---------------|
-;;| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
+;;| age          | crime          | gender          | time-location         | weapons        | all-weapon-list        | all-location-list | non-murderers | non-murder-weapons | non-murder-times | non-murder-locations |
+;;|--------------+----------------+-----------------+-----------------------+----------------+------------------------+-------------------+---------------+--------------------+------------------+----------------------|
+;;| (name, age)0 | (g,n,t,l,w,a)1 | (gender, name)2 | (name,time,location)3 | (name,weapon)4 | (weapon1,weapon2,etc)5 | (loc1,loc2,etc)6  |             7 |                  8 |                9 |                   10 |
+
+
 (defvar *ages* nil)
 (defvar *crime* nil)
 (defvar *genders* nil)
@@ -41,11 +43,19 @@ exec ros -Q -- $0 "$@"
   (setf *weapons* (fifth *import-db*))
   (setf *all-weapons-list* (first (sixth *import-db*)))
   (setf *all-location-list* (first (seventh *import-db*)))
-  (setf *non-murderers* (first (eighth *import-db*))))
+  (setf *non-murderers* (first (eighth *import-db*)))
+  (setf *non-murder-weapons* (first (nth 8 *import-db*)))
+  (setf *non-murder-times* (first (nth 9 *import-db*)))
+  (setf *non-murder-locations* (first (nth 10 *import-db*))))
 
 (defun random-element (target-list)
   (let ((rng (random (list-length target-list))))
     (nth rng target-list)))
+
+(defun two-different-random (target-list)
+  (prog (first-item)
+	 (setf first-item (random-element target-list))
+	 (return-from two-different-random (values first-item (random-element (remove first-item target-list))))))
 
 (defun between (left-end number right-end)
   (cond
@@ -54,33 +64,44 @@ exec ros -Q -- $0 "$@"
     (t nil)))
 
 (defun generate-clue ()
-					;(let ((rng (random 100)))
-  (let ((rng 82))
+  (let ((rng (random 100)))
     (cond
       ((between 0 rng 5)
-       (format nil "where_was(~(~a, ~a~))." (first (random-element *time-locations*)) (second (random-element *time-locations*))))
+       (format nil "where_was(~(~a, ~a~))."
+	       (first (random-element *time-locations*)) (second (random-element *time-locations*))))
       ((between 6 rng 9)
-       (format nil "Clue 2"))
+       (format nil "was_ever(~(~a,~a~))."
+	       (first (random-element *time-locations*)) (random-element *all-location-list*)))
       ((between 10 rng 14)
-       (format nil "which_weapon(~(~a~))." (first (random-element *weapons*))))
+       (format nil "which_weapon(~(~a~))."
+	       (first (random-element *weapons*))))
       ((between 15 rng 19)
-       (format nil "gender(~(~a~))." (first (random-element *ages*))))
+       (format nil "gender(~(~a~))."
+	       (first (random-element *ages*))))
       ((between 20 rng 24)
-       (format nil "what_age(~(~a~))." (first (random-element *ages*))))
+       (format nil "what_age(~(~a~))."
+	       (first (random-element *ages*))))
       ((between 25 rng 27)
-       (format nil "all_~(~a~)." (random-element '(males females))))
+       (format nil "all_~(~a~)."
+	       (random-element '(males females))))
       ((between 28 rng 31)
-       (format nil "over_age(~a)." (random '100)))
+       (format nil "over_age(~a)."
+	       (random '100)))
       ((between 32 rng 35)
-       (format nil "exact_age(~a)." (random '100)))
+       (format nil "exact_age(~a)."
+	       (random '100)))
       ((between 36 rng 40)
-       (format nil "how_many_users(~(~a~))." (random-element *all-weapons-list*)))
+       (format nil "how_many_users(~(~a~))."
+	       (random-element *all-weapons-list*)))
       ((between 41 rng 44)
-       (format nil "what_users(~(~a~))." (random-element *all-weapons-list*)))
+       (format nil "what_users(~(~a~))."
+	       (random-element *all-weapons-list*)))
       ((between 45 rng 47)
-       (format nil "all_day(~(~a~))." (first (random-element *weapons*))))
+       (format nil "all_day(~(~a~))."
+	       (first (random-element *weapons*))))
       ((between 48 rng 51)
-       (format nil "were_same_place(~(~a,~a~))." 'REPLACE-THIS 'REPLACE-THIS))
+       (multiple-value-bind (suspect-1 suspect-2) (two-different-random *ages*)
+	 (format nil "were_same_place(~(~a,~a~))." (first suspect-1) (first suspect-2))))
       ((between 52 rng 54)
        (format nil "murderer_gender."))
       ((between 55 rng 56)
@@ -94,25 +115,33 @@ exec ros -Q -- $0 "$@"
       ((between 66 rng 68)
        (format nil "murderer_age."))
       ((between 69 rng 71)
-       (format nil "is_murderer(~(~a~))." (third (random-element *non-murderers*))))
+       (format nil "is_murderer(~(~a~))."
+	       (third (random-element *non-murderers*))))
       ((between 72 rng 74)
-       (format nil "is_murder_weapon(~(~a~))." (random-element *non-murder-weapons*)))
+       (format nil "is_murder_weapon(~(~a~))."
+	       (random-element *non-murder-weapons*)))
       ((between 75 rng 77)
-       (format nil "is_murder_time(~(~a~))." (random-element *non-murder-times*)))
+       (format nil "is_murder_time(~(~a~))."
+	       (random-element *non-murder-times*)))
       ((between 78 rng 80)
-       (format nil "is_murder_location(~(~a~))." (random-element *non-murder-locations*)))
+       (format nil "is_murder_location(~(~a~))."
+	       (random-element *non-murder-locations*)))
       ((between 81 rng 85)
-       (format nil "when_was(~(~a,~a~))." (first (random-element *ages*)) (random-element *all-location-list*)))
+       (format nil "when_was(~(~a,~a~))."
+	       (first (random-element *ages*)) (random-element *all-location-list*)))
       ((between 86 rng 88)
-       (format nil "Clue 24"))
+       (format nil "was_ever(~(~a,~a~))."
+	       (first (random-element *time-locations*)) (random-element *all-location-list*)))
       ((between 89 rng 91)
        (format nil "locations."))
       ((between 92 rng 94)
        (format nil "times."))
       ((between 95 rng 96)
-       (format nil "Clue 27"))
+       (multiple-value-bind (suspect-1 suspect-2) (two-different-random *ages*)
+	 (format nil "narrow_murderer_2(~(~a,~a~))." (first suspect-1) (first suspect-2))))
       ((between 97 rng 98)
-       (format nil "Clue 28"))
+       (multiple-value-bind (weapon-1 weapon-2) (two-different-random *all-weapons-list*)
+	 (format nil "narrow_weapon_2(~(~a,~a~))." weapon-1 weapon-2)))
       ((between 98 rng 99)
        (format nil "Sorry, you are the 1%. You get no clue!!!")))))
 
@@ -122,6 +151,6 @@ exec ros -Q -- $0 "$@"
   ;(print *non-murderers*)
   (setf *random-state* (make-random-state t))
   ;(print (random-element *weapons*))
-  (print (generate-clue)))
+  (format t "~a" (generate-clue)))
 
 ;;; vim: set ft=lisp lisp:

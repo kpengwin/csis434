@@ -8,21 +8,21 @@
 
 ** TODO User input cleanup
 
-** TODO Add static functions
+** DONE Add static functions
 
 ** DONE Add location list export
 
-| age         | crime         | gender         | time-location        | weapons       | all-weapon-list       | all-location-list |
-|-------------+---------------+----------------+----------------------+---------------+-----------------------+-------------------|
-| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) | (weapon1,weapon2,etc) | (loc1,loc2,etc)   |
+| age          | crime          | gender          | time-location         | weapons        | all-weapon-list        | all-location-list | non-murderers | non-murder-weapons | non-murder-times | non-murder-locations |
+|--------------+----------------+-----------------+-----------------------+----------------+------------------------+-------------------+---------------+--------------------+------------------+----------------------|
+| (name, age)0 | (g,n,t,l,w,a)1 | (gender, name)2 | (name,time,location)3 | (name,weapon)4 | (weapon1,weapon2,etc)5 | (loc1,loc2,etc)6  |             7 |                  8 |                9 |                   10 |
 
 * Clue Generator
 
 ** DONE Giant case statement
 
-** IN-PROGRESS Display correct template for all cases
+** DONE Display correct template for all cases
 
-** TODO Prompt for filling out templat
+** DONE fill out random data for all cases
 
 ** TODO User input cleanup
 

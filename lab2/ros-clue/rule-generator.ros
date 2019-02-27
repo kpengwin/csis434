@@ -12,6 +12,159 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.rule-generator.3759929116)
 
+(defvar *static-prolog* "is_murderer(Suspect) :- crime(_,Suspect,_,_,_,_),
+    !,
+    format('~w is the murderer.~n', [Suspect]).
+is_murderer(Suspect) :- \\+crime(_,Suspect,_,_,_,_),
+    format('~w is not the murderer.~n', [Suspect]),
+    fail.
+
+is_murder_weapon(Weapon) :- crime(_,_,_,_,Weapon,_),
+    !,
+    format('~w is the murder weapon.~n', [Weapon]).
+is_murder_weapon(Weapon) :- \\+crime(_,_t,_,_,Weapon,_),
+    format('~w is not the murder weapon.~n', [Weapon]),
+    fail.
+
+is_murder_time(Time) :- crime(_,_,Time,_,_,_),
+    !,
+    format('~w is the time of the murder.~n', [Time]).
+is_murder_time(Time) :- \\+crime(_,_,Time,_,_,_),
+    format('~w is not the time of the murder.~n', [Time]),
+    fail.
+
+is_murder_location(Location) :- crime(_,_,_,Location,_,_),
+    !,
+    format('~w is the location of the murder.~n', [Location]).
+is_murder_location(Location) :- \\+crime(_,_,_,Location,_,_),
+    format('~w is not the location of the murder.~n', [Location]),
+    fail.
+
+where_was(Suspect,Time) :- tl(Suspect,Time,Location),
+    !,
+    format('~w was at ~w during ~w.~n', [Suspect, Location, Time]).
+
+was_ever(Suspect,Location) :- tl(Suspect,_,Location),
+    !,
+    format('~w did spend some time at ~w.~n', [Suspect, Location]).
+was_ever(Suspect,Location) :- \\+tl(Suspect,_,Location),
+    format('~w was never at ~w.~n', [Suspect, Location]),
+    fail.
+
+when_was(Suspect,Location) :- tl(Suspect,Time,Location),
+			      !,
+			      findall(X, tl(Suspect,X,Location), Times),
+			      format('~w was at ~w during ~w.~n', [Suspect, Location, Times]).
+when_was(Suspect,Location) :- !, format('~w was never at ~w.~n', [Suspect, Location]), fail.
+
+which_weapon(Suspect) :- weapon(Suspect, Weapon),
+    !,
+    format('~w\\'s fingerprints are on the ~w.~n', [Suspect, Weapon]).
+
+gender(Suspect) :- male(Suspect),
+    !,
+    format('~w is male.~n', [Suspect]).
+gender(Suspect) :- female(Suspect),
+    !,
+    format('~w is female.~n', [Suspect]).
+
+what_age(Suspect) :- age(Suspect,Age),
+    !,
+    format('~w is ~w years old.~n', [Suspect, Age]).
+
+murderer_gender :- crime(Gender,_,_,_,_,_),
+		     !,
+		     format('The murderer is ~w.~n', [Gender]).
+murderer_name :- crime(_,Name,_,_,_,_),
+		     !,
+		     format('The murderer is ~w.~n', [Name]).
+murderer_time :- crime(_,_,Time,_,_,_),
+		     !,
+		     format('The murder happened during ~w.~n', [Time]).
+murderer_location :- crime(_,_,_,Location,_,_),
+		     !,
+		     format('The murderer happened at ~w.~n', [Location]).
+murderer_weapon :- crime(_,_,_,_,Weapon,_),
+		     !,
+		     format('The murderer used the ~w.~n', [Weapon]).
+murderer_age :- crime(_,_,_,_,_,Age),
+		     !,
+		     format('The murderer is ~w years old.~n', [Age]).
+
+
+all_males :- findall(X, male(X), Y),
+	     format('The males are ~w.~n', [Y]).
+
+all_females :- findall(X, female(X), Y),
+	       format('The females are ~w.~n', [Y]).
+
+what_users(Weapon) :- findall(X, weapon(X, Weapon), Suspects),
+		      format('The fingerprints on the gun match ~w.~n', [Suspects]).
+
+how_many_users(Weapon) :- findall(X, weapon(X, Weapon), Suspects),
+			  length(Suspects, Length),
+			  format('There are ~w sets of fingerprints on the ~w.~n', [Length,Weapon]).
+
+exact_age(Age) :- findall(X, age(X, Age), Suspects),
+		  exists_exact_age(Suspects, Age).
+
+exists_exact_age([], Age) :- !, format('There are no suspects of exactly ~w years.~n', [Age]), fail.
+exists_exact_age(_, Age) :- !, format('There is someone who is exactly ~w years old.~n', [Age]).
+
+over_age(Age) :- age(X, Overage),
+		 Overage>Age,
+		 !, format('There is at least one suspect who is over ~w years old.~n', [Age]).
+over_age(Age) :- format('There are no suspects over ~w years.~n', [Age]), fail.
+
+
+all_day(Suspect) :- findall(X, tl(Suspect, _, X), Locations),
+		    findall(Y, tl(Suspect, Y, _), Times),
+		    pairwise(Locations, Times, Pairs),
+		    format('~w was spotted as follows:~n~w~n', [Suspect, Pairs]).
+
+pairwise([],[],[]).
+pairwise([A|RestA],[B|RestB], [[A,B]|Rest]) :- pairwise(RestA,RestB,Rest). 
+
+were_same_place(Suspect1,Suspect2) :- findall(X, tl(Suspect1, _, X), Locations1),
+				      findall(Y, tl(Suspect2, _, Y), Locations2),
+				      pairwise(Locations1,Locations2,PairedLocations),
+				      pairs_match(PairedLocations).
+match([A,B|R]) :- A=B.
+
+pairs_match([]) :- format('They were never in the same location.', []), fail.
+pairs_match([H|T]) :- match(H),
+		      !, format('They were in the same location at some point.~n', []).
+pairs_match([H|T]) :- pairs_match(T).
+		      
+
+locations :- findall(X, tl(_,_,X),Locations),
+	     sort(Locations,SLocations),
+	     format('The locations are:~n~w~n', [SLocations]).
+
+times :- findall(X, tl(_,X,_),Times),
+	 sort(Times,STimes),
+	 format('The times are:~n~w~n', [STimes]).
+
+narrow_murderer_2(Suspect1, Suspect2) :- crime(_,Suspect1,_,_,_,_),
+				!,
+				format('One of those is the murderer.~n', []).
+narrow_murderer_2(Suspect1, Suspect2) :- crime(_,Suspect2,_,_,_,_),
+				!,
+				format('One of those is the murderer.~n', []).
+narrow_murderer_2(Suspect1, Suspect2) :- !,				!,
+				format('Neither of those is the murderer.~n', []),
+				fail.
+
+narrow_weapon_2(Weapon1, Weapon2) :- crime(_,_,_,_,Weapon1,_),
+				!,
+				format('One of those is the murder weapon.~n', []).
+narrow_weapon_2(Weapon1, Weapon2) :- crime(_,_,_,_,Weapon2,_),
+				!,
+				format('One of those is the murder weapon.~n', []).
+narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
+				format('Neither of those is the murder weapon.~n', []),
+				fail.")
+
 (defvar *weapons* nil)
 (defvar *locations* nil)
 (defvar *suspects* nil)
@@ -23,10 +176,9 @@ exec ros -Q -- $0 "$@"
 ;;| age         | crime         | gender         | time-location        | weapon        |
 ;;|-------------+---------------+----------------+----------------------+---------------|
 ;;| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
-
 ;;simplify syntax for inserting into a sublist
 (defmacro sublist-insert (place var value)
-  `(setf (,place ,var) (cons ,value (,place ,var))))
+  `(setf (nth ,place ,var) (cons ,value (nth ,place ,var))))
 
 ;;prompt-read: function adapted from Peter Siebel's book "Practical Common Lisp" Section 3
 (defun prompt-read (prompt)
@@ -91,27 +243,27 @@ exec ros -Q -- $0 "$@"
 
 ;;generate functions are for making the prolog and export
 (defun generate-age (suspect)
-  (sublist-insert first *export-db* (list (third suspect) (second suspect)))
+  (sublist-insert 0 *export-db* (list (third suspect) (second suspect)))
   (format nil "age(~(~a~),~d)." (third suspect) (second suspect)))
 
 (defun generate-gender (suspect)
   (cond
     ((equalp "m" (first suspect))
      (progn
-       (sublist-insert third *export-db* (list "male" (third suspect)))
+       (sublist-insert 2 *export-db* (list "male" (third suspect)))
        (return-from generate-gender (format nil "male(~(~a~))." (third suspect)))))
      (t (progn
-	  (sublist-insert third *export-db* (list "female" (third suspect)))
+	  (sublist-insert 2 *export-db* (list "female" (third suspect)))
 	  (return-from generate-gender (format nil "female(~(~a~))." (third suspect)))))))
 
 (defun generate-weapons (suspect)
   (prog ((rng (random (list-length *weapons*))))
-     (sublist-insert fifth *export-db* (list (third suspect) (nth rng *weapons*)))
+     (sublist-insert 4 *export-db* (list (third suspect) (nth rng *weapons*)))
      (return-from generate-weapons (format nil "weapon(~(~a,~a~))." (third suspect) (nth rng *weapons*)))))
 
 (defun generate-time-locations (suspect time)
   (prog ((rng (random (list-length *locations*))))
-     (sublist-insert fourth *export-db* (list (third suspect) time (nth rng *locations*)))
+     (sublist-insert 3 *export-db* (list (third suspect) time (nth rng *locations*)))
      (return-from generate-time-locations (format nil "tl(~(~a,~a,~a~))." (third suspect) time (nth rng *locations*)))))
 
 ;;need to be able to convert between m and f and male and female
@@ -126,18 +278,21 @@ exec ros -Q -- $0 "$@"
   (prog* ((rng-weapon (random (list-length *weapons*)))
           (rng-location (random (list-length *locations*)))
           (rng-time (random (list-length *times*))))
-     (sublist-insert second *export-db* (list (gender (first murderer))
+     (sublist-insert 1 *export-db* (list (gender (first murderer))
 					      (third murderer)
 					      (nth rng-time *times*)
 					      (nth rng-location *locations*)
 					      (nth rng-weapon *weapons*)
 					      (second murderer)))
-     (sublist-insert fourth *export-db* (list (third murderer)
+     (sublist-insert 3 *export-db* (list (third murderer)
 					      (nth rng-time *times*)
 					      (nth rng-location *locations*)))
-     (sublist-insert fifth *export-db* (list (third murderer)
+     (sublist-insert 4 *export-db* (list (third murderer)
 					     (nth rng-weapon *weapons*)))
-     (sublist-insert );;;;;;;;;;;;;;;;;;;;;;;;HEREEEEEE
+     (sublist-insert 8 *export-db* (remove (nth rng-weapon *weapons*) *weapons* :test #'equal)) ;non-murder-weapons
+     (sublist-insert 9 *export-db* (remove (nth rng-time *times*) *times* :test #'equal)) ;non-murder-times
+     (sublist-insert 10 *export-db* (remove (nth rng-location *locations*) *locations* :test #'equal)) ;non-murder locations
+     
      (return-from generate-murderer-stuff
        (append
 	(list (generate-age murderer))
@@ -175,12 +330,13 @@ exec ros -Q -- $0 "$@"
                                   (loop for y in *times* collecting (generate-time-locations x y)))
                              (generate-murderer-stuff murderer))))
      (setf prolog-statements (sort prolog-statements #'string-lessp))
-     (sublist-insert sixth *export-db* *weapons*)
-     (sublist-insert seventh *export-db* *locations*)
-     (sublist-insert eighth *export-db* *suspects*)
+     (sublist-insert 5 *export-db* *weapons*)
+     (sublist-insert 6 *export-db* *locations*)
+     (sublist-insert 7 *export-db* *suspects*)
      (save-db "db.pl" *export-db*)
      (format t "~%")
-     (loop for x in prolog-statements do (format t "~a~%" x))))
+     (loop for x in prolog-statements do (format t "~a~%" x))
+     (format t "~%~a~%" *static-prolog*)))
 
 ;;it's main. ignores arguments and does what we need it to.
 (defun main (&rest argv)
@@ -188,6 +344,7 @@ exec ros -Q -- $0 "$@"
   (setf *random-state* (make-random-state t))
   (clue-game-generator-input)
   (clue-game-generator-output)
-  (format t "~%"))
+  (format t "~%")
+  (prompt-read "Copy the prolog to your interpreter, then press ENTER to end."))
 
 ;;; vim: set ft=lisp lisp:
