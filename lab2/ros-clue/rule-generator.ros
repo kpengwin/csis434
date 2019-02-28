@@ -348,3 +348,5 @@ narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
   (prompt-read "Copy the prolog to your interpreter, then press ENTER to end."))
 
 ;;; vim: set ft=lisp lisp:
+
+(load (expand-file-name "~/.roswell/helper.el"))
