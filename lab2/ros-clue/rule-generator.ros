@@ -3,6 +3,12 @@
 #|
 exec ros -Q -- $0 "$@"
 |#
+
+;;; Clue Game - Rule Generator
+;;; By Kenneth Bruce
+;;; For Lab 2, CSIS 434 Spring 2019 at LU
+
+
 (progn ;;init forms
   (ros:ensure-asdf)
   ;;#+quicklisp(ql:quickload '() :silent t)
@@ -12,6 +18,7 @@ exec ros -Q -- $0 "$@"
   (:use :cl))
 (in-package :ros.script.rule-generator.3759929116)
 
+;;all our static prolog functions
 (defvar *static-prolog* "is_murderer(Suspect) :- crime(_,Suspect,_,_,_,_),
     !,
     format('~w is the murderer.~n', [Suspect]).
@@ -22,7 +29,7 @@ is_murderer(Suspect) :- \\+crime(_,Suspect,_,_,_,_),
 is_murder_weapon(Weapon) :- crime(_,_,_,_,Weapon,_),
     !,
     format('~w is the murder weapon.~n', [Weapon]).
-is_murder_weapon(Weapon) :- \\+crime(_,_t,_,_,Weapon,_),
+is_murder_weapon(Weapon) :- \\+crime(_,_,_,_,Weapon,_),
     format('~w is not the murder weapon.~n', [Weapon]),
     fail.
 
@@ -51,7 +58,7 @@ was_ever(Suspect,Location) :- \\+tl(Suspect,_,Location),
     format('~w was never at ~w.~n', [Suspect, Location]),
     fail.
 
-when_was(Suspect,Location) :- tl(Suspect,Time,Location),
+when_was(Suspect,Location) :- tl(Suspect,_,Location),
 			      !,
 			      findall(X, tl(Suspect,X,Location), Times),
 			      format('~w was at ~w during ~w.~n', [Suspect, Location, Times]).
@@ -111,7 +118,7 @@ exact_age(Age) :- findall(X, age(X, Age), Suspects),
 exists_exact_age([], Age) :- !, format('There are no suspects of exactly ~w years.~n', [Age]), fail.
 exists_exact_age(_, Age) :- !, format('There is someone who is exactly ~w years old.~n', [Age]).
 
-over_age(Age) :- age(X, Overage),
+over_age(Age) :- age(_, Overage),
 		 Overage>Age,
 		 !, format('There is at least one suspect who is over ~w years old.~n', [Age]).
 over_age(Age) :- format('There are no suspects over ~w years.~n', [Age]), fail.
@@ -129,12 +136,12 @@ were_same_place(Suspect1,Suspect2) :- findall(X, tl(Suspect1, _, X), Locations1)
 				      findall(Y, tl(Suspect2, _, Y), Locations2),
 				      pairwise(Locations1,Locations2,PairedLocations),
 				      pairs_match(PairedLocations).
-match([A,B|R]) :- A=B.
+match([A,B|_]) :- A=B.
 
 pairs_match([]) :- format('They were never in the same location.', []), fail.
-pairs_match([H|T]) :- match(H),
+pairs_match([H|_]) :- match(H),
 		      !, format('They were in the same location at some point.~n', []).
-pairs_match([H|T]) :- pairs_match(T).
+pairs_match([_|T]) :- pairs_match(T).
 		      
 
 locations :- findall(X, tl(_,_,X),Locations),
@@ -145,26 +152,35 @@ times :- findall(X, tl(_,X,_),Times),
 	 sort(Times,STimes),
 	 format('The times are:~n~w~n', [STimes]).
 
-narrow_murderer_2(Suspect1, Suspect2) :- crime(_,Suspect1,_,_,_,_),
+narrow_murderer_2(Suspect1,_) :- crime(_,Suspect1,_,_,_,_),
 				!,
 				format('One of those is the murderer.~n', []).
-narrow_murderer_2(Suspect1, Suspect2) :- crime(_,Suspect2,_,_,_,_),
+narrow_murderer_2(_,Suspect2) :- crime(_,Suspect2,_,_,_,_),
 				!,
 				format('One of those is the murderer.~n', []).
-narrow_murderer_2(Suspect1, Suspect2) :- !,				!,
+narrow_murderer_2(_,_) :- !,				!,
 				format('Neither of those is the murderer.~n', []),
 				fail.
 
-narrow_weapon_2(Weapon1, Weapon2) :- crime(_,_,_,_,Weapon1,_),
+narrow_weapon_2(Weapon1,_) :- crime(_,_,_,_,Weapon1,_),
 				!,
 				format('One of those is the murder weapon.~n', []).
-narrow_weapon_2(Weapon1, Weapon2) :- crime(_,_,_,_,Weapon2,_),
+narrow_weapon_2(_,Weapon2) :- crime(_,_,_,_,Weapon2,_),
 				!,
 				format('One of those is the murder weapon.~n', []).
-narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
+narrow_weapon_2(_,_) :- !,				!,
 				format('Neither of those is the murder weapon.~n', []),
-				fail.")
+				fail.
 
+guess_crime(Gender,Suspect,Time,Location,Weapon,Age) :-
+    crime(Gender,Suspect,Time,Location,Weapon,Age),
+    format('YAY you are correct and you win the game!~n', []),
+    !.
+guess_crime(_,_,_,_,_,_) :- 
+    format('That is wrong - you are out!~n', []),
+   	fail.")
+
+;;some global variables
 (defvar *weapons* nil)
 (defvar *locations* nil)
 (defvar *suspects* nil)
@@ -173,9 +189,10 @@ narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
 
 (defvar *export-db* '(nil nil nil nil nil nil nil nil nil nil nil))
 ;;*export-db* format:
-;;| age         | crime         | gender         | time-location        | weapon        |
-;;|-------------+---------------+----------------+----------------------+---------------|
-;;| (name, age) | (g,n,t,l,w,a) | (gender, name) | (name,time,location) | (name,weapon) |
+;;| age          | crime          | gender          | time-location         | weapons        | all-weapon-list        | all-location-list | non-murderers | non-murder-weapons | non-murder-times | non-murder-locations |
+;;|--------------+----------------+-----------------+-----------------------+----------------+------------------------+-------------------+---------------+--------------------+------------------+----------------------|
+;;| (name, age)0 | (g,n,t,l,w,a)1 | (gender, name)2 | (name,time,location)3 | (name,weapon)4 | (weapon1,weapon2,etc)5 | (loc1,loc2,etc)6  |             7 |                  8 |                9 |                   10 
+
 ;;simplify syntax for inserting into a sublist
 (defmacro sublist-insert (place var value)
   `(setf (nth ,place ,var) (cons ,value (nth ,place ,var))))
@@ -193,6 +210,12 @@ narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
                    :if-exists :supersede)
     (with-standard-io-syntax
       (print db out))))
+
+(defun write-list-to-file (filename input-list)
+  (with-open-file (out filename
+                   :direction :output
+                   :if-exists :supersede)
+    (loop for x in input-list do (write-line x))))
 
 
 ;;handling adding to the globals
@@ -333,10 +356,16 @@ narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
      (sublist-insert 5 *export-db* *weapons*)
      (sublist-insert 6 *export-db* *locations*)
      (sublist-insert 7 *export-db* *suspects*)
-     (save-db "db.pl" *export-db*)
+     (save-db "db.txt" *export-db*)
      (format t "~%")
      (loop for x in prolog-statements do (format t "~a~%" x))
-     (format t "~%~a~%" *static-prolog*)))
+     (format t "~%~a~%" *static-prolog*)
+     (with-open-file (out "db.pl"
+                   :direction :output
+                   :if-exists :supersede)
+       (loop for x in prolog-statements do (format out "~a~%" x))
+       (format out "~%~a~%" *static-prolog*))))
+
 
 ;;it's main. ignores arguments and does what we need it to.
 (defun main (&rest argv)
@@ -345,8 +374,6 @@ narrow_weapon_2(Weapon1, Weapon2) :- !,				!,
   (clue-game-generator-input)
   (clue-game-generator-output)
   (format t "~%")
-  (prompt-read "Copy the prolog to your interpreter, then press ENTER to end."))
+  (prompt-read "Copy the prolog to your interpreter (or use the file db.pl), then press ENTER to end."))
 
 ;;; vim: set ft=lisp lisp:
-
-(load (expand-file-name "~/.roswell/helper.el"))
