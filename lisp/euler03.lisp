@@ -18,4 +18,4 @@
       (setf temp (factor-once (car result)))
       (if temp
           (setf result (append temp (cdr result)))
-          (return-from factor-all result)))))
+(return-from factor-all result)))))
