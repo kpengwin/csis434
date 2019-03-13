@@ -3,6 +3,12 @@
 #|
 exec ros -Q -- $0 "$@"
 |#
+
+;;; Clue Game - Clue Generator
+;;; By Kenneth Bruce
+;;; For Lab 2, CSIS 434 Spring 2019 at LU
+
+
 (progn ;;init forms
   (ros:ensure-asdf)
   ;;#+quicklisp(ql:quickload '() :silent t)
@@ -18,7 +24,7 @@ exec ros -Q -- $0 "$@"
 ;;|--------------+----------------+-----------------+-----------------------+----------------+------------------------+-------------------+---------------+--------------------+------------------+----------------------|
 ;;| (name, age)0 | (g,n,t,l,w,a)1 | (gender, name)2 | (name,time,location)3 | (name,weapon)4 | (weapon1,weapon2,etc)5 | (loc1,loc2,etc)6  |             7 |                  8 |                9 |                   10 |
 
-
+;;global variables
 (defvar *ages* nil)
 (defvar *crime* nil)
 (defvar *genders* nil)
@@ -31,7 +37,7 @@ exec ros -Q -- $0 "$@"
 (defvar *non-murder-times* nil)
 (defvar *non-murder-locations* nil)
 
-
+;;get the information about the murder from the file
 (defun load-db (filename)
   (with-open-file (in filename)
     (with-standard-io-syntax
@@ -48,21 +54,33 @@ exec ros -Q -- $0 "$@"
   (setf *non-murder-times* (first (nth 9 *import-db*)))
   (setf *non-murder-locations* (first (nth 10 *import-db*))))
 
+;;prompt-read: function adapted from Peter Siebel's book "Practical Common Lisp" Section 3
+(defun prompt-read (prompt)
+  (format *query-io* "~a >" prompt)
+  (force-output *query-io*)
+  (read-line *query-io*))
+
+;;return a random element of the list that is passed in
 (defun random-element (target-list)
   (let ((rng (random (list-length target-list))))
     (nth rng target-list)))
 
+;;return two different random elements of the list that is passed in
 (defun two-different-random (target-list)
   (prog (first-item)
 	 (setf first-item (random-element target-list))
 	 (return-from two-different-random (values first-item (random-element (remove first-item target-list))))))
 
+
+;;return true if the number is between the left end and the right end
 (defun between (left-end number right-end)
   (cond
     ((and (<= left-end number) (<= number right-end)) t)
     ((and (>= left-end number) (>= number right-end)) t)
     (t nil)))
 
+
+;;determine a clue based on the specified probability and generate it based on the data we have
 (defun generate-clue ()
   (let ((rng (random 100)))
     (cond
@@ -145,12 +163,37 @@ exec ros -Q -- $0 "$@"
       ((between 98 rng 99)
        (format nil "Sorry, you are the 1%. You get no clue!!!")))))
 
+;;this is the main game loop. players who guess wrong are eliminated. the game ends when all players have guessed wrong, or someone guesses right
+(defun main-loop (num-players)
+  (let ((player-list (loop for y from 1 to num-players collecting y)) (black-list nil))
+    (loop
+       (loop for x in player-list do
+	    (cond
+	      ((not (member x black-list))
+	       (progn
+		 (format t "Player ~a, it is now your turn.~%" x)
+		 (prog ((player-choice (prompt-read "Press ENTER to get your clue or type GUESS to try to guess.")))
+		    (cond
+		      ((equalp player-choice "GUESS")
+		       (progn
+			 (format t "Enter your guess in the prolog terminal as:~%guess_crime(gender,suspect,time,location,weapon,age).~%")
+			 (cond
+			   ((y-or-n-p "Were you successful? ") (return-from main-loop 'GAME_OVER))
+			   (t (push x black-list)))))
+		      (t
+		       (progn
+			 (format t "~%~a~%" (generate-clue))
+			 (prompt-read "Press ENTER when you are done.")
+			 (format t "~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%")))))))
+	      ((equalp (list-length black-list) (list-length player-list)) (return-from main-loop 'GAME_OVER))
+	      (t nil))))))
+
+;;main loop - find out how many are playing and then start the game
 (defun main (&rest argv)
   (declare (ignorable argv))
-  (load-db "db.pl")
-  ;(print *non-murderers*)
+  (load-db "db.txt")
   (setf *random-state* (make-random-state t))
-  ;(print (random-element *weapons*))
-  (format t "~a" (generate-clue)))
+  (let ((player-count (parse-integer (prompt-read "Welcome! How many players? "))))
+    (main-loop player-count)))
 
 ;;; vim: set ft=lisp lisp:
