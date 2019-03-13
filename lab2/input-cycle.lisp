@@ -13,19 +13,20 @@
        (loop for x in player-list do
 	    (cond
 	      ((member x player-list) (progn
-				    (format t "Player ~a, it is now your turn.~%" x)
-				    (prog ((player-choice (prompt-read "Press ENTER to get your clue or type GUESS to try to guess.")))
-				       (cond
-					 ((equalp player-choice "GUESS")
-					  (progn
-					    (cond
-					      ((y-or-n-p "Were you successful? ") (return-from main-loop 'GAME_OVER))
-					      (t (print (setf player-list (remove x player-list)))))))
-					 (t
-					  (progn
-					    (format t "~%~a~%" (generate-clue))
-					    (prompt-read "Press ENTER when you are done.")
-					    (format t "~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%")))))))
+					(format t "~a is the player list" player-list)
+					(format t "Player ~a, it is now your turn.~%" x)
+					(prog ((player-choice (prompt-read "Press ENTER to get your clue or type GUESS to try to guess.")))
+					   (cond
+					     ((equalp player-choice "GUESS")
+					      (progn
+						(cond
+						  ((y-or-n-p "Were you successful? ") (return-from main-loop 'GAME_OVER))
+						  (t (print (setf player-list (remove x player-list)))))))
+					     (t
+					      (progn
+						(format t "~%~a~%" (generate-clue))
+						(prompt-read "Press ENTER when you are done.")
+						(format t "~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%~%")))))))
 	      (t nil))))))
 
 (defun a-loop-test (the-list)
